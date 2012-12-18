@@ -54,7 +54,7 @@ class Ctagger
                 continue;
             }
             chdir($path);
-            $command .= " -f $tagsFile \
+            $options = " -f $tagsFile \
                 -h '.php' \
                 -R \
                 --exclude='.git' \
@@ -64,7 +64,7 @@ class Ctagger
                 --fields=+afkst \
                 --PHP-kinds=+cf \
                 --append=yes";
-            exec($command . ' 2>&1', $output);
+            exec($command . $options . ' 2>&1', $output);
 
             $io->write($output, true);
         }

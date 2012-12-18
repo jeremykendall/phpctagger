@@ -22,5 +22,13 @@
         {
             "PhpCtagger": "library/"
         }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "PhpCtagger\\Composer\\Script\\Ctagger::ctag"
+        ],
+        "post-update-cmd": [
+            "PhpCtagger\\Composer\\Script\\Ctagger::ctag"
+        ]
     }
 }
