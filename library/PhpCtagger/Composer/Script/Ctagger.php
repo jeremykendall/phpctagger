@@ -41,6 +41,7 @@ class Ctagger
 
         // Ensure the tags file is new each time
         if (file_exists($tagsFile)) {
+            $io->write('Deleting existing tagfile . . .');
             unlink($tagsFile);
         }
 
@@ -67,11 +68,15 @@ class Ctagger
 
             $io->write($output, true);
         }
+        $io->write('Tagfile complete!');
     }
 
     public static function getInstalledCtags()
     {
         if (exec('which ctags')) {
+            if (version_compare(self::getCtagsVersion(), '5.8', '<')) {
+                throw new \Exception('Incorrect version of ctags installed. Please install ctags version 5.8 or greater');
+            }
             return 'ctags';
         }
 
@@ -84,7 +89,9 @@ class Ctagger
 
     public static function getCtagsVersion()
     {
-        return null;
+        exec('ctags --version', $output);
+        preg_match('/(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/', $output[0], $version);
+        return $version[0];
     }
 
     public static function getTagsDir($vendorDir)
