@@ -14,8 +14,7 @@
         "php": ">=5.3.10"
     },
     "require-dev": {
-        "composer/composer": "1.0.x-dev",
-        "mikey179/vfsStream": "1.1.*"
+        "composer/composer": "1.0.x-dev"
     },
     "autoload": {
         "psr-0": 
