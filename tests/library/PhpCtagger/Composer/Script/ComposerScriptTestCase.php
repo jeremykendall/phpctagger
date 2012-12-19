@@ -29,9 +29,9 @@ class ComposerScriptTestCase extends \PHPUnit_Framework_TestCase
     protected $outputMock;
 
     /**
-     * @var \Composer\Script\Event
+     * @var \Composer\IO\IOInterface
      */
-    protected $event;
+    protected $consoleIO;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -47,8 +47,8 @@ class ComposerScriptTestCase extends \PHPUnit_Framework_TestCase
         $inputMock = $this->getMock('Symfony\Component\Console\Input\InputInterface');
         $this->outputMock = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
         $helperMock = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
-        $consoleIO = new \Composer\IO\ConsoleIO($inputMock, $this->outputMock, $helperMock);
-        $this->event = new \Composer\Script\Event('post-install-cmd', $this->composerMock, $consoleIO, true);
+        $this->consoleIO = new \Composer\IO\ConsoleIO($inputMock, $this->outputMock, $helperMock);
+        $this->event = new \Composer\Script\Event('post-install-cmd', $this->composerMock, $this->consoleIO, true);
     }
 
     /**
@@ -57,7 +57,7 @@ class ComposerScriptTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
-        
+        $this->composerConfig = null;
     }
 
 }
