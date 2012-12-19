@@ -33,6 +33,11 @@ class Ctagger
     {
         $io = $event->getIO();
 
+        if (!$event->isDevMode()) {
+            $io->write('Composer is not in dev mode. Will not create/modify ctags file.');
+            return;
+        } 
+
         $io->write('Preparing to build tags file . . .');
 
         $vendorDir = realpath($event->getComposer()->getConfig()->get('vendor-dir'));
@@ -67,6 +72,9 @@ class Ctagger
             exec($command . $options . ' 2>&1', $output);
 
             $io->write($output, true);
+
+            // Empty the output array
+            unset($output);
         }
         $io->write('Tagfile complete!');
     }
@@ -77,6 +85,7 @@ class Ctagger
             if (version_compare(self::getCtagsVersion(), '5.8', '<')) {
                 throw new \Exception('Incorrect version of ctags installed. Please install ctags version 5.8 or greater');
             }
+
             return 'ctags';
         }
 
@@ -91,6 +100,7 @@ class Ctagger
     {
         exec('ctags --version', $output);
         preg_match('/(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/', $output[0], $version);
+
         return $version[0];
     }
 
