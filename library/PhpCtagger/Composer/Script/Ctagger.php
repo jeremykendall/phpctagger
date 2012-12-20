@@ -25,7 +25,7 @@ class Ctagger
     protected static $tagsDir;
 
     /**
-     * Generated ctag files for project library and composer dependencies
+     * Generate ctag files for project library and composer dependencies
      *
      * @param \Composer\Script\Event $event
      */
@@ -41,13 +41,7 @@ class Ctagger
         $io->write('Preparing to build tags file . . .');
 
         $vendorDir = realpath($event->getComposer()->getConfig()->get('vendor-dir'));
-        $tagsDir = self::getTagsDir($vendorDir);
-
-        if (!file_exists($tagsDir)) {
-            mkdir($tagsDir, 0755);
-        }
-
-        $tagsFile = $tagsDir . '/tags';
+        $tagsFile = self::getTagsDir($vendorDir) . '/tags';
 
         // Ensure the tags file is new each time
         if (file_exists($tagsFile)) {
@@ -98,7 +92,7 @@ class Ctagger
             return 'ctags-exuberant';
         }
 
-        throw new Exception('ctags is not installed');
+        throw new \Exception('ctags is not installed');
     }
 
     public static function getCtagsVersion()
@@ -112,7 +106,7 @@ class Ctagger
     public static function getTagsDir($vendorDir)
     {
         if (is_null(self::$tagsDir)) {
-            return dirname($vendorDir) . '/tags';
+            return dirname($vendorDir);
         }
 
         return self::$tagsDir;
