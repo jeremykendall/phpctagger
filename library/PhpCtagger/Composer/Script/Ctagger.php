@@ -34,7 +34,7 @@ class Ctagger
         $io = $event->getIO();
 
         if (!$event->isDevMode()) {
-            $io->write('Composer is not in dev mode. Will not create/modify ctags file.');
+            $io->write('PhpCtagger: Composer is not in dev mode. Will not create/modify ctags file.');
             return;
         } 
 
@@ -42,6 +42,11 @@ class Ctagger
 
         $vendorDir = realpath($event->getComposer()->getConfig()->get('vendor-dir'));
         $tagsDir = self::getTagsDir($vendorDir);
+
+        if (!file_exists($tagsDir)) {
+            mkdir($tagsDir, 0755);
+        }
+
         $tagsFile = $tagsDir . '/tags';
 
         // Ensure the tags file is new each time
