@@ -39,8 +39,6 @@ class CtaggerTest extends \ComposerScriptTestCase
 
     public function testCtagDevModeTrue()
     {
-        $devMode = true;
-
         $this->assertFileNotExists($this->tagsDir . '/tags');
 
         $this->composerMock->expects($this->once())
@@ -50,10 +48,8 @@ class CtaggerTest extends \ComposerScriptTestCase
         $this->outputMock->expects($this->exactly(9))
                     ->method('write');
         
-        $event = new \Composer\Script\Event('post-install-cmd', $this->composerMock, $this->consoleIO, $devMode);
-        
         Ctagger::setTagsDir($this->tagsDir);
-        Ctagger::ctag($event);
+        Ctagger::ctag($this->event);
 
         $this->assertFileExists($this->tagsDir . '/tags');
     }
@@ -63,8 +59,6 @@ class CtaggerTest extends \ComposerScriptTestCase
      */
     public function testCtagDevModeFalse()
     {
-        $devMode = false;
-
         $this->assertFileNotExists($this->tagsDir . '/tags');
 
         $this->composerMock->expects($this->exactly(0))
@@ -75,7 +69,7 @@ class CtaggerTest extends \ComposerScriptTestCase
             ->method('write')
             ->with('PhpCtagger: Composer is not in dev mode. Will not create/modify ctags file.');
         
-        $event = new \Composer\Script\Event('post-install-cmd', $this->composerMock, $this->consoleIO, $devMode);
+        $event = new \Composer\Script\Event('dummy-event-name', $this->composerMock, $this->consoleIO, $devMode = false);
         
         Ctagger::setTagsDir($this->tagsDir);
         Ctagger::ctag($event);
@@ -95,14 +89,12 @@ class CtaggerTest extends \ComposerScriptTestCase
                 ->method('getConfig')
                 ->will($this->returnValue($this->composerConfig));
 
-        $event = new \Composer\Script\Event('post-install-cmd', $this->composerMock, $this->consoleIO, true);
-
         $this->outputMock->expects($this->at(1))
             ->method('write')
             ->with('Deleting existing tagfile . . .');
 
         Ctagger::setTagsDir($this->tagsDir);
-        Ctagger::ctag($event);
+        Ctagger::ctag($this->event);
     }
 
     public function testGetInstalledCtags()
