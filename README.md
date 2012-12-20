@@ -41,6 +41,12 @@ In this example, the script will run both post install and post update.
 With that done, run `composer update --dev` to install PHP Ctagger and build
 your tag file.
 
+## Limitations
+
+This initial implementation is extremely naive, and will only create tags for
+libraries and dependencies that have path entries in
+`/vendor/composer/autoload_namespaces.php`.
+
 ## Vim
 
 In order to use your new tag file, vim needs to know about it.  Make sure to
