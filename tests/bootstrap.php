@@ -8,7 +8,6 @@ date_default_timezone_set('America/Chicago');
 
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 require_once 'PHPUnit/Autoload.php';
-require_once 'library/PhpCtagger/Composer/Script/ComposerScriptTestCase.php';
 
 define('PROJECT_ROOT_DIR', realpath(__DIR__ . '/..'));
 
