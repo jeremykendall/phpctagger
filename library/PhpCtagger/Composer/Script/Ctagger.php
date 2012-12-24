@@ -15,7 +15,7 @@ use Composer\Script\Event;
 /**
  * Ctagger class
  *
- * Generated ctag files for project library and composer dependencies
+ * Generates ctag files for project library and Composer dependencies
  */
 class Ctagger
 {
@@ -25,7 +25,17 @@ class Ctagger
     protected static $tagsDir;
 
     /**
-     * Generate ctag files for project library and composer dependencies
+     * @var string Path to Composer vendor directory
+     */
+    protected static $vendorDir;
+
+    /**
+     * @var \PhpCtagger\CtagCommand Used to find installed ctags
+     */
+    protected static $ctagCommand;
+
+    /**
+     * Generate ctag files for project library and Composer dependencies
      *
      * @param \Composer\Script\Event $event
      */
@@ -33,88 +43,140 @@ class Ctagger
     {
         $io = $event->getIO();
 
-        if (!$event->isDevMode()) {
-            $io->write('PhpCtagger: Composer is not in dev mode. Will not create/modify ctags file.');
+        try {
+            self::confirmDevMode($event);
+            $ctagCommand = self::getCtagCommand();
+            $command = $ctagCommand::getCommand();
+        } catch (\Exception $e) {
+            $io->write('PhpCtagger: ' . $e->getMessage());
+
             return;
-        } 
+        }
 
         $io->write('Preparing to build tags file . . .');
 
-        $vendorDir = realpath($event->getComposer()->getConfig()->get('vendor-dir'));
-        $tagsFile = self::getTagsDir($vendorDir) . '/tags';
+        self::$vendorDir = realpath($event->getComposer()->getConfig()->get('vendor-dir'));
+        $tagsFile = self::getTagsDir() . '/tags';
+        self::deleteTagsFile($tagsFile);
 
-        // Ensure the tags file is new each time
-        if (file_exists($tagsFile)) {
-            $io->write('Deleting existing tagfile . . .');
-            unlink($tagsFile);
-        }
+        $paths = include self::$vendorDir . '/composer/autoload_namespaces.php';
 
-        $paths = include $vendorDir . '/composer/autoload_namespaces.php';
+        // In at least one instance, I've seen paths in the autoload_namespaces
+        // file that don't actually exist in the project. This removes them from
+        // the $paths array.
+        array_filter($paths, function($path) {
+            return(file_exists($path));
+        });
 
-        $command = self::getInstalledCtags();
+        $options = " -f $tagsFile \
+            -h '.php' \
+            -R \
+            --exclude='.git' \
+            --exclude='.svn' \
+            --totals=yes \
+            --tag-relative=yes \
+            --fields=+afkst \
+            --PHP-kinds=+cf \
+            --append=yes";
 
         foreach ($paths as $path) {
-            if (!file_exists($path)) {
-                continue;
-            }
             chdir($path);
-            $options = " -f $tagsFile \
-                -h '.php' \
-                -R \
-                --exclude='.git' \
-                --exclude='.svn' \
-                --totals=yes \
-                --tag-relative=yes \
-                --fields=+afkst \
-                --PHP-kinds=+cf \
-                --append=yes";
             exec($command . $options . ' 2>&1', $output);
-
             $io->write($output, true);
-
-            // Empty the output array
             unset($output);
         }
+
         $io->write('Tagfile complete!');
     }
 
-    public static function getInstalledCtags()
+    /**
+     * Deletes tags file
+     *
+     * @param string Path to tags file
+     */
+    public static function deleteTagsFile($tagsFile)
     {
-        if (exec('which ctags')) {
-            if (version_compare(self::getCtagsVersion(), '5.8', '<')) {
-                throw new \Exception('Incorrect version of ctags installed. Please install ctags version 5.8 or greater');
-            }
-
-            return 'ctags';
+        if (file_exists($tagsFile)) {
+            unlink($tagsFile);
         }
-
-        if (exec('which ctags-exuberant')) {
-            return 'ctags-exuberant';
-        }
-
-        throw new \Exception('ctags is not installed');
     }
 
-    public static function getCtagsVersion()
+    /**
+     * Throws exception if Composer is not in dev mode
+     *
+     * @param \Composer\Script\Event Composer Event
+     * @throws Exception Throws exception if Composer is not in dev mode
+     */
+    public static function confirmDevMode(Event $event)
     {
-        exec('ctags --version', $output);
-        preg_match('/(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/', $output[0], $version);
-
-        return $version[0];
+        if (!$event->isDevMode()) {
+            throw new \Exception('Composer is not in dev mode. Will not create/modify ctags file.');
+        }
     }
 
-    public static function getTagsDir($vendorDir)
+    /**
+     * Gets path to the tags file directory.
+     *
+     * By default, the tags directory is the same directory that holds the Composer
+     * vendor directory.  It is possible to change the location of the directory
+     * using setTagsDir() for testing purposes.
+     *
+     * @return Path to tags directory
+     */
+    public static function getTagsDir()
     {
         if (is_null(self::$tagsDir)) {
-            return dirname($vendorDir);
+            return dirname(self::$vendorDir);
         }
 
         return self::$tagsDir;
     }
 
+    /**
+     * Set directory where tags file will be created
+     *
+     * @param string Directory where tags file will be created
+     */
     public static function setTagsDir($tagsDir)
     {
         self::$tagsDir = $tagsDir;
     }
 
+    /**
+     * Gets the CtagCommand class
+     *
+     * @return mixed Returns the default CtagCommand class name or a mock
+     * object for testing.
+     */
+    public static function getCtagCommand()
+    {
+        if (is_null(self::$ctagCommand)) {
+            return '\PhpCtagger\CtagCommand';
+        }
+
+        return self::$ctagCommand;
+    }
+
+    /**
+     * Used to override the default \PhpCtagger\CtagCommand for testing
+     *
+     * @param mixed A new command class, a mock object, or null
+     */
+    public static function setCtagCommand($ctagCommand)
+    {
+        self::$ctagCommand = $ctagCommand;
+    }
+
+    /**
+     * Sets path to vendor directory
+     *
+     * Vendor directory is discoverable via Composer's config object. This is to
+     * set/reset vendor directory during testing
+     *
+     * @param string|null Path to vendor directory
+     */
+    public static function setVendorDir($vendorDir = null)
+    {
+        self::$vendorDir = $vendorDir;
+    }
 }
