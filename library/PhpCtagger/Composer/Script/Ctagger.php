@@ -62,9 +62,8 @@ class Ctagger
         $paths = include self::$vendorDir . '/composer/autoload_namespaces.php';
 
         // In at least one instance, I've seen paths in the autoload_namespaces
-        // file that don't actually exist in the project. This removes them from
-        // the $paths array.
-        array_filter($paths, function($path) {
+        // file that don't exist. This removes them from the $paths array.
+        $paths = array_filter($paths, function($path) {
             return(file_exists($path));
         });
 
