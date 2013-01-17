@@ -59,7 +59,13 @@ class Ctagger
         $tagsFile = self::getTagsDir() . '/tags';
         self::deleteTagsFile($tagsFile);
 
-        $paths = include self::$vendorDir . '/composer/autoload_namespaces.php';
+        $autoloadNamespaces = include self::$vendorDir . '/composer/autoload_namespaces.php';
+
+        // Flatten $paths array
+        $paths = array();
+        array_walk_recursive($autoloadNamespaces, function ($p) use (&$paths) {
+            $paths[] = $p;
+        });
 
         // In at least one instance, I've seen paths in the autoload_namespaces
         // file that don't exist. This removes them from the $paths array.

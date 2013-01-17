@@ -103,7 +103,7 @@ class CtaggerTest extends \PHPUnit_Framework_TestCase
             ->method('getConfig')
             ->will($this->returnValue($this->composerConfig));
 
-        $this->outputMock->expects($this->exactly(9))
+        $this->outputMock->expects($this->exactly(15))
             ->method('write');
 
         $class = $this->ctagCommandMock;

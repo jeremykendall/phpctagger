@@ -11,7 +11,10 @@
     ],
     "keywords": ["ctags", "exuberant ctags", "vim", "composer", "php"],
     "require": {
-        "php": ">=5.3.10"
+        "php": ">=5.3.10",
+        "behat/mink":"1.4@stable",
+        "behat/mink-sahi-driver":"*@stable",
+        "behat/mink-zombie-driver":"*@stable"
     },
     "require-dev": {
         "composer/composer": "1.0.x-dev"
