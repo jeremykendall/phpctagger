@@ -41,6 +41,13 @@ In this example, the script will run both post install and post update.
 With that done, run `composer update --dev` to install PHP Ctagger and build
 your tag file.
 
+## ctags version
+
+Ensure you're running the [most recent version of
+ctags](http://ctags.sourceforge.net/).  This is especially
+important on OSX, as the [wrong version of ctags is installed by
+default](https://github.com/jeremykendall/phpctagger/issues/2).
+
 ## Limitations
 
 This initial implementation is extremely naive, and will only create tags for
